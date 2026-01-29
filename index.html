@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de finanças mensal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050505;
+            --bg-secondary: #0f0f0f;
+            --bg-card: #161616;
+            --accent-green: #00ffa3;
+            --accent-green-glow: rgba(0, 255, 163, 0.2);
+            --accent-yellow: #ffb800;
+            --accent-red: #ff3b6f;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #606060;
+            --border: #222222;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* Modern Background */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(0, 255, 163, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(255, 59, 111, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+        }
+
+        /* Header */
+        header {
+            padding: 32px 0;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-green);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--bg-primary);
+            font-weight: 700;
+            box-shadow: 0 0 20px var(--accent-green-glow);
+        }
+
+        .settings-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .settings-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            transform: rotate(45deg);
+        }
+
+        /* Main Balance Card */
+        .balance-card {
+            background: linear-gradient(145deg, var(--bg-card), var(--bg-secondary));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-family: 'Space Mono', monospace;
+            font-size: 52px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -2px;
+            background: linear-gradient(to bottom, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .balance-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+        }
+
+        .status-good { background: rgba(0, 255, 163, 0.1); color: var(--accent-green); border: 1px solid rgba(0, 255, 163, 0.2); }
+        .status-warning { background: rgba(255, 184, 0, 0.1); color: var(--accent-yellow); border: 1px solid rgba(255, 184, 0, 0.2); }
+        .status-danger { background: rgba(255, 59, 111, 0.1); color: var(--accent-red); border: 1px solid rgba(255, 59, 111, 0.2); }
+
+        .days-note {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 24px 20px;
+            transition: var(--transition);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+
+        .stat-card:hover {
+            border-color: rgba(255,255,255,0.1);
+            transform: translateY(-4px);
+            background: var(--bg-secondary);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 4px;
+        }
+
+        .stat-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Actions */
+        .quick-actions {
+            margin-bottom: 40px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        .section-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .add-expense-btn {
+            width: 100%;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            border: none;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px -5px var(--accent-green-glow);
+        }
+
+        .add-expense-btn:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 15px 30px -5px var(--accent-green-glow);
+            filter: brightness(1.1);
+        }
+
+        .add-expense-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Transactions */
+        .transactions {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+        }
+
+        .transaction-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+            animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .transaction-item:hover {
+            border-color: rgba(255,255,255,0.1);
+            background: #1c1c1c;
+            transform: translateX(4px);
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .transaction-details h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .type-badge {
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .badge-weekly { background: rgba(0, 255, 163, 0.1); color: var(--accent-green); }
+        .badge-monthly { background: rgba(255, 184, 0, 0.1); color: var(--accent-yellow); }
+
+        .transaction-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .transaction-amount {
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-red);
+            text-align: right;
+        }
+
+        .transaction-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            transition: var(--transition);
+        }
+
+        .action-icon-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .action-icon-btn:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* Modal Modernization */
+        .modal {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 20px;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 440px;
+            padding: 32px;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover { color: #fff; transform: rotate(90deg); }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 4px var(--accent-green-glow);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .category-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .category-btn-icon { font-size: 20px; }
+
+        .category-btn:hover { border-color: var(--text-muted); color: #fff; }
+        .category-btn.active {
+            background: var(--accent-green-glow);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .deduct-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .deduct-btn {
+            padding: 14px;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            border: none;
+            padding: 18px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        .reset-btn {
+            width: 100%;
+            background: transparent;
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 59, 111, 0.3);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: var(--transition);
+        }
+
+        .reset-btn:hover { background: rgba(255, 59, 111, 0.1); border-color: var(--accent-red); }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px dashed var(--border);
+        }
+
+        .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+        .empty-state p { color: var(--text-muted); font-size: 14px; }
+
+        /* Custom Confirmation Modal */
+        .confirm-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            max-width: 360px;
+            text-align: center;
+            animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .confirm-icon { font-size: 48px; margin-bottom: 20px; }
+        .confirm-btns { display: flex; gap: 12px; margin-top: 24px; }
+        .confirm-btn { flex: 1; padding: 14px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; transition: var(--transition); border: none; }
+        .btn-cancel { background: var(--bg-secondary); color: #fff; border: 1px solid var(--border); }
+        .btn-danger { background: var(--accent-red); color: #fff; }
+        .btn-success { background: var(--accent-green); color: #fff; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        @media (max-width: 480px) {
+            .container { padding: 0 20px; }
+            .balance-amount { font-size: 42px; }
+            .modal-content { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    
+    <div class="container">
+        <header>
+            <h1>
+                <span class="logo-icon">₿</span>
+                Financial Reset
+            </h1>
+            <button class="settings-btn" onclick="openSettings()" aria-label="Configurações">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+        </header>
+
+        <main>
+            <div class="balance-card">
+                <div class="balance-label">Saldo Disponível (Mês)</div>
+                <div class="balance-amount" id="currentBalance">R$ 0,00</div>
+                <div class="balance-status" id="balanceStatus">
+                    <span>Aguardando Configuração</span>
+                </div>
+                <div class="days-note" id="daysNote"></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Pode Gastar na Semana</div>
+                    <div class="stat-value" id="weeklyAllowance">R$ 0</div>
+                    <div class="stat-sub" id="weeklyInfo">Média/dia restante</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Gasto Total do Mês</div>
+                    <div class="stat-value" id="monthlySpent">R$ 0</div>
+                    <div class="stat-sub" id="monthlyInfo">Todas despesas</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Gasto Total da Semana</div>
+                    <div class="stat-value" id="weeklySpent">R$ 0</div>
+                    <div class="stat-sub" id="weeklyProgress">Seg-Dom</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pode Gastar Hoje</div>
+                    <div class="stat-value" id="dailyAllowance">R$ 0</div>
+                    <div class="stat-sub" id="dailyInfo">Restantes para o dia</div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="section-title">Operações</div>
+                <button class="add-expense-btn" onclick="openExpenseModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Adicionar Despesa
+                </button>
+            </div>
+
+            <div class="transactions">
+                <div class="section-title">Histórico Recente</div>
+                <div id="transactionsList">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal" id="expenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Nova Despesa</h2>
+                <button class="close-btn" onclick="closeExpenseModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="expenseAmount" step="0.01" placeholder="0,00" autofocus>
+            </div>
+            <div class="form-group">
+                <label>Descrição (Opcional)</label>
+                <input type="text" id="expenseDescription" placeholder="Ex: Mercado, Uber...">
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <div class="category-grid">
+                    <button class="category-btn" data-category="Alimentação" onclick="selectCategory(this)">
+                        <span class="category-btn-icon">🍔</span> Alimentação
+                    </button>
+                    <button class="category-btn" data-category="Transporte" onclick="selectCategory(this)">
+                        <span class="category-btn-icon">🚗</span> Transporte
+                    </button>
+                    <button class="category-btn" data-category="Lazer" onclick="selectCategory(this)">
+                        <span class="category-btn-icon">🎮</span> Lazer
+                    </button>
+                    <button class="category-btn" data-category="Saúde" onclick="selectCategory(this)">
+                        <span class="category-btn-icon">💊</span> Saúde
+                    </button>
+                    <button class="category-btn" data-category="Compras" onclick="selectCategory(this)">
+                        <span class="category-btn-icon">🛍️</span> Compras
+                    </button>
+                    <button class="category-btn" data-category="Outros" onclick="selectCategory(this)">
+                        <span class="category-btn-icon">📦</span> Outros
+                    </button>
+                </div>
+                <input type="hidden" id="selectedCategory">
+            </div>
+            <div class="form-group">
+                <label>Abater de qual saldo?</label>
+                <div class="deduct-grid">
+                    <button class="category-btn deduct-btn" data-deduct="weekly" onclick="selectDeductFrom(this)">
+                        📅 Semanal
+                    </button>
+                    <button class="category-btn deduct-btn" data-deduct="monthly" onclick="selectDeductFrom(this)">
+                        📆 Mensal
+                    </button>
+                </div>
+                <input type="hidden" id="selectedDeductFrom">
+            </div>
+            <button class="submit-btn" onclick="addExpenseClick()">Adicionar Despesa</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Configurações</h2>
+                <button class="close-btn" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Saldo Mensal Total</label>
+                <input type="number" id="setMonthlyBalance" step="0.01" placeholder="0,00">
+            </div>
+            <div class="form-group">
+                <label>Orçamento Semanal</label>
+                <input type="number" id="setWeeklyBudget" step="0.01" placeholder="Ex: 210,00">
+            </div>
+            <div class="form-group">
+                <label>Data de Reset (Dia do Mês)</label>
+                <input type="number" id="setResetDay" min="1" max="31" placeholder="5">
+            </div>
+            <button class="submit-btn" onclick="saveSettings()">Salvar Alterações</button>
+            <button class="reset-btn" onclick="showResetConfirm()">🔄 Iniciar Novo Ciclo</button>
+        </div>
+    </div>
+
+    <script>
+        // SAFE STORAGE WRAPPER - Previne erros em ambientes sandboxed
+        const storage = {
+            isAvailable: () => {
+                try {
+                    const test = '__storage_test__';
+                    window.localStorage.setItem(test, test);
+                    window.localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            },
+            save: (key, data) => {
+                if (storage.isAvailable()) {
+                    window.localStorage.setItem(key, JSON.stringify(data));
+                }
+            },
+            load: (key) => {
+                if (storage.isAvailable()) {
+                    const saved = window.localStorage.getItem(key);
+                    return saved ? JSON.parse(saved) : null;
+                }
+                return null;
+            }
+        };
+
+        const categoryIcons = {
+            'Alimentação': '🍔', 'Transporte': '🚗', 'Lazer': '🎮', 
+            'Saúde': '💊', 'Compras': '🛍️', 'Outros': '📦'
+        };
+
+        let appData = {
+            currentCycle: {
+                id: generateUUID(),
+                monthlyBalance: 0,
+                weeklyBudget: 0,
+                resetDay: 5,
+                startDate: new Date().toISOString(),
+                transactions: []
+            }
+        };
+
+        let editingTransactionId = null;
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // --- Funções de Cálculo ---
+        
+        function calculateMonthlyBalance() {
+            const initial = parseFloat(appData.currentCycle.monthlyBalance) || 0;
+            const spent = appData.currentCycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            return initial - spent;
+        }
+
+        function calculateWeeklyBalance() {
+            const budget = parseFloat(appData.currentCycle.weeklyBudget) || 0;
+            const spent = getWeeklySpending();
+            return budget - spent;
+        }
+
+        function getTodaysWeeklySpending() {
+            const today = new Date();
+            const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+            const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
+            
+            return appData.currentCycle.transactions
+                .filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate >= startOfDay && tDate < endOfDay && t.deductFrom === 'weekly';
+                })
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        }
+
+        function getAverageDailyForWeek() {
+            const weeklyBalance = calculateWeeklyBalance();
+            const daysLeft = getDaysRemainingInWeek();
+            return daysLeft > 0 ? weeklyBalance / daysLeft : 0;
+        }
+
+        function getDaysRemaining() {
+            const today = new Date();
+            const resetDay = appData.currentCycle.resetDay || 5;
+            const currentMonthReset = new Date(today.getFullYear(), today.getMonth(), resetDay);
+            const diff = currentMonthReset - today;
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+        }
+
+        function getWeeklySpending() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const startOfWeek = new Date(today);
+            const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            startOfWeek.setDate(today.getDate() - daysFromMonday);
+            startOfWeek.setHours(0, 0, 0, 0);
+            
+            return appData.currentCycle.transactions
+                .filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate >= startOfWeek && tDate <= today && t.deductFrom === 'weekly';
+                })
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        }
+
+        function getMonthlySpending() {
+            return appData.currentCycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        }
+
+        function getDaysRemainingInWeek() {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0=Dom, 1=Seg...
+            return dayOfWeek === 0 ? 1 : (7 - dayOfWeek + 1);
+        }
+
+        function getBalanceStatus() {
+            const balance = calculateMonthlyBalance();
+            const initial = parseFloat(appData.currentCycle.monthlyBalance) || 0;
+            if (initial === 0) return { class: 'status-warning', text: 'Configure seu saldo' };
+            
+            const percentage = (balance / initial) * 100;
+            if (percentage >= 50) return { class: 'status-good', text: 'Saldo Saudável' };
+            if (percentage >= 20) return { class: 'status-warning', text: 'Atenção ao Saldo' };
+            return { class: 'status-danger', text: 'Saldo Crítico' };
+        }
+
+        // --- UI & UX Logic ---
+
+        function updateUI() {
+            const monthlyBalance = calculateMonthlyBalance();
+            document.getElementById('currentBalance').textContent = `R$ ${monthlyBalance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            
+            const status = getBalanceStatus();
+            const statusEl = document.getElementById('balanceStatus');
+            statusEl.className = `balance-status ${status.class}`;
+            statusEl.innerHTML = `<span>${status.text}</span>`;
+            
+            const weeklyBalance = calculateWeeklyBalance();
+            const daysInWeek = getDaysRemainingInWeek();
+            const avgDaily = getAverageDailyForWeek();
+
+            document.getElementById('weeklyAllowance').textContent = `R$ ${Math.max(0, weeklyBalance).toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            document.getElementById('weeklyInfo').textContent = `Média: R$ ${Math.max(0, avgDaily).toLocaleString('pt-BR', {maximumFractionDigits: 0})}/dia (${daysInWeek}d)`;
+            
+            const monthlySpent = getMonthlySpending();
+            document.getElementById('monthlySpent').textContent = `R$ ${monthlySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            const initialMonthly = parseFloat(appData.currentCycle.monthlyBalance) || 0;
+            document.getElementById('monthlyInfo').textContent = `${monthlySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/${initialMonthly.toLocaleString('pt-BR', {maximumFractionDigits: 0})} do orçamento mensal`;
+            
+            const weeklySpent = getWeeklySpending();
+            document.getElementById('weeklySpent').textContent = `R$ ${weeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            const weeklyBudget = parseFloat(appData.currentCycle.weeklyBudget) || 0;
+            document.getElementById('weeklyProgress').textContent = `${weeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/${weeklyBudget.toLocaleString('pt-BR', {maximumFractionDigits: 0})} do orçamento semanal`;
+            
+            const todaysSpent = getTodaysWeeklySpending();
+            const plannedWeeklyBalance = weeklyBalance + todaysSpent;
+            const plannedAvgDaily = daysInWeek > 0 ? plannedWeeklyBalance / daysInWeek : 0;
+            const dailyRemaining = plannedAvgDaily - todaysSpent;
+            document.getElementById('dailyAllowance').textContent = `R$ ${Math.max(0, dailyRemaining).toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            document.getElementById('dailyInfo').textContent = `Restantes para o dia`;
+
+            const days = getDaysRemaining();
+            let daysText;
+            if (days > 0) {
+                daysText = `${days} ${days === 1 ? 'dia' : 'dias'} até o reset`;
+            } else if (days < 0) {
+                const abs = Math.abs(days);
+                daysText = `Dias Ultrapassados: ${abs} ${abs === 1 ? 'dia' : 'dias'} a mais que a data estipulada.`;
+            } else {
+                daysText = 'Hoje é o dia do reset';
+            }
+            document.getElementById('daysNote').textContent = daysText;
+            
+            updateTransactionsList();
+            
+            // Sync settings inputs
+            document.getElementById('setMonthlyBalance').value = appData.currentCycle.monthlyBalance || '';
+            document.getElementById('setWeeklyBudget').value = appData.currentCycle.weeklyBudget || '';
+            document.getElementById('setResetDay').value = appData.currentCycle.resetDay || 5;
+        }
+
+        function updateTransactionsList() {
+            const container = document.getElementById('transactionsList');
+            if (appData.currentCycle.transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💸</div>
+                        <p>Nenhuma transação encontrada.<br>Adicione sua primeira despesa acima.</p>
+                    </div>`;
+                return;
+            }
+            
+            const sorted = [...appData.currentCycle.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            container.innerHTML = sorted.map(t => {
+                const isWeekly = t.deductFrom === 'weekly';
+                const badgeClass = isWeekly ? 'badge-weekly' : 'badge-monthly';
+                const badgeText = isWeekly ? 'Semanal' : 'Mensal';
+                
+                return `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="category-icon">${categoryIcons[t.category] || '📦'}</div>
+                        <div class="transaction-details">
+                            <h3>${t.description || t.category} <span class="type-badge ${badgeClass}">${badgeText}</span></h3>
+                            <div class="transaction-date">${formatDate(t.date)} • ${t.category}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="transaction-amount">-R$ ${parseFloat(t.amount).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        <div class="transaction-actions">
+                            <button class="action-icon-btn" onclick="editTransaction('${t.id}')" title="Editar">✏️</button>
+                            <button class="action-icon-btn" onclick="deleteTransaction('${t.id}')" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) return 'Hoje';
+            if (date.toDateString() === yesterday.toDateString()) return 'Ontem';
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+        }
+
+        // --- Modal & Action Handlers ---
+
+        function openExpenseModal() {
+            document.getElementById('expenseModal').classList.add('active');
+            setTimeout(() => document.getElementById('expenseAmount').focus(), 100);
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('expenseModal').classList.remove('active');
+            editingTransactionId = null;
+            document.querySelector('#expenseModal .modal-title').textContent = 'Nova Despesa';
+            document.querySelector('#expenseModal .submit-btn').textContent = 'Adicionar Despesa';
+            // Clear inputs
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseDescription').value = '';
+            document.getElementById('selectedCategory').value = '';
+            document.getElementById('selectedDeductFrom').value = '';
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function openSettings() { document.getElementById('settingsModal').classList.add('active'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
+
+        function selectCategory(btn) {
+            document.querySelectorAll('.category-grid .category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('selectedCategory').value = btn.dataset.category;
+        }
+
+        function selectDeductFrom(btn) {
+            document.querySelectorAll('.deduct-grid .category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('selectedDeductFrom').value = btn.dataset.deduct;
+        }
+
+        function addExpenseClick() {
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const category = document.getElementById('selectedCategory').value;
+            const description = document.getElementById('expenseDescription').value.trim();
+            const deductFrom = document.getElementById('selectedDeductFrom').value;
+
+            if (!amount || amount <= 0) {
+                showAlert('Insira um valor válido!');
+                return;
+            }
+            if (!category) {
+                showAlert('Selecione uma categoria!');
+                return;
+            }
+            if (!deductFrom) {
+                showAlert('Selecione o tipo de abatimento!');
+                return;
+            }
+
+            if (editingTransactionId) {
+                const index = appData.currentCycle.transactions.findIndex(t => t.id === editingTransactionId);
+                if (index !== -1) {
+                    appData.currentCycle.transactions[index] = {
+                        ...appData.currentCycle.transactions[index],
+                        amount, category, description: description || category, deductFrom
+                    };
+                }
+            } else {
+                appData.currentCycle.transactions.push({
+                    id: generateUUID(),
+                    amount, category, description: description || category, deductFrom,
+                    date: new Date().toISOString()
+                });
+            }
+
+            saveData();
+            updateUI();
+            closeExpenseModal();
+        }
+
+        function deleteTransaction(id) {
+            const t = appData.currentCycle.transactions.find(x => x.id === id);
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-icon">🗑️</div>
+                    <h3 style="margin-bottom: 8px">Excluir Despesa?</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px">R$ ${t.amount.toFixed(2)} - ${t.category}</p>
+                    <div class="confirm-btns">
+                        <button class="confirm-btn btn-cancel" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="confirm-btn btn-danger" onclick="confirmDelete('${id}', this)">Excluir</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+
+        function confirmDelete(id, btn) {
+            appData.currentCycle.transactions = appData.currentCycle.transactions.filter(t => t.id !== id);
+            saveData();
+            updateUI();
+            btn.closest('.modal').remove();
+        }
+
+        function editTransaction(id) {
+            const t = appData.currentCycle.transactions.find(x => x.id === id);
+            editingTransactionId = id;
+            document.getElementById('expenseAmount').value = t.amount;
+            document.getElementById('expenseDescription').value = t.description || '';
+            document.getElementById('selectedCategory').value = t.category;
+            document.getElementById('selectedDeductFrom').value = t.deductFrom;
+            
+            document.querySelectorAll('.category-grid .category-btn').forEach(b => {
+                if(b.dataset.category === t.category) b.classList.add('active');
+            });
+            document.querySelectorAll('.deduct-grid .category-btn').forEach(b => {
+                if(b.dataset.deduct === t.deductFrom) b.classList.add('active');
+            });
+
+            document.querySelector('#expenseModal .modal-title').textContent = 'Editar Despesa';
+            document.querySelector('#expenseModal .submit-btn').textContent = 'Salvar Alterações';
+            openExpenseModal();
+        }
+
+        function saveSettings() {
+            const monthlyBalance = parseFloat(document.getElementById('setMonthlyBalance').value) || 0;
+            const weeklyBudget = parseFloat(document.getElementById('setWeeklyBudget').value) || 0;
+            const resetDay = parseInt(document.getElementById('setResetDay').value) || 5;
+            
+            appData.currentCycle.monthlyBalance = monthlyBalance;
+            appData.currentCycle.weeklyBudget = weeklyBudget;
+            appData.currentCycle.resetDay = resetDay;
+            
+            saveData();
+            updateUI();
+            closeSettings();
+            showAlert('Configurações salvas com sucesso!');
+        }
+
+        function showResetConfirm() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-icon">🔄</div>
+                    <h3 style="margin-bottom: 8px">Iniciar Novo Ciclo?</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px">Isso arquivará os dados atuais.</p>
+                    <div class="confirm-btns">
+                        <button class="confirm-btn btn-cancel" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="confirm-btn btn-success" onclick="confirmResetCycle(this)">Confirmar</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+
+        function confirmResetCycle(btn) {
+            appData.currentCycle = {
+                id: generateUUID(),
+                monthlyBalance: appData.currentCycle.monthlyBalance,
+                weeklyBudget: appData.currentCycle.weeklyBudget,
+                resetDay: appData.currentCycle.resetDay,
+                startDate: new Date().toISOString(),
+                transactions: []
+            };
+            saveData();
+            updateUI();
+            closeSettings();
+            btn.closest('.modal').remove();
+        }
+
+        function showAlert(message) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-icon">ℹ️</div>
+                    <p style="color: var(--text-secondary); font-size: 14px">${message}</p>
+                    <div class="confirm-btns">
+                        <button class="confirm-btn btn-success" onclick="this.closest('.modal').remove()">OK</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+
+        function saveData() { 
+            storage.save('financialResetData', appData);
+        }
+        
+        function loadData() {
+            const saved = storage.load('financialResetData');
+            if (saved) appData = saved;
+            updateUI();
+        }
+
+        // Close modals on outside click
+        document.querySelectorAll('.modal').forEach(m => {
+            m.addEventListener('click', e => { if(e.target === m) m.classList.remove('active'); });
+        });
+
+        window.addEventListener('load', loadData);
+    </script>
+</body>
+</html>
