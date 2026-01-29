@@ -920,7 +920,7 @@
                 id: generateUUID(),
                 monthlyBalance: 0,
                 weeklyBudget: 0,
-                resetDate: new Date().toISOString().split('T')[0], // Default to today
+                resetDate: new Date().toISOString().split('T')[0],
                 startDate: new Date().toISOString(),
                 transactions: []
             }
@@ -945,25 +945,6 @@
             return initial - spent;
         }
 
-        function calculateWeeklyBalance(cycle = appData.currentCycle) {
-            const budget = parseFloat(cycle.weeklyBudget) || 0;
-            const spent = getWeeklySpending(cycle);
-            return budget - spent;
-        }
-
-        function getTodaysWeeklySpending(cycle = appData.currentCycle) {
-            const today = new Date();
-            const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-            const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
-            
-            return cycle.transactions
-                .filter(t => {
-                    const tDate = new Date(t.date);
-                    return tDate >= startOfDay && tDate < endOfDay && t.deductFrom === 'weekly';
-                })
-                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-        }
-
         function getDaysRemaining() {
             const today = new Date();
             const resetDate = new Date(appData.currentCycle.resetDate);
@@ -977,7 +958,7 @@
 
         function getWeeklySpending(cycle = appData.currentCycle) {
             const today = new Date();
-            const dayOfWeek = today.getDay();
+            const dayOfWeek = today.getDay(); // 0 (Domingo) a 6 (Sábado)
             const startOfWeek = new Date(today);
             startOfWeek.setDate(today.getDate() - dayOfWeek);
             startOfWeek.setHours(0, 0, 0, 0);
@@ -992,6 +973,17 @@
 
         function getMonthlySpending(cycle = appData.currentCycle) {
             return cycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        }
+
+        function getDaysRemainingInWeek() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            // Retorna: Dom=7? Não, a lógica padrão de apps semanais geralmente é reset no domingo ou segunda.
+            // Pelo seu exemplo "Quinta-feira restam 3 dias", assumimos que o ciclo termina Sábado.
+            // Quinta (4) -> 7 - 4 = 3. Sábado (6) -> 7 - 6 = 1.
+            // Domingo (0) -> 7 - 0 = 7.
+            let days = 7 - dayOfWeek;
+            return days === 0 ? 7 : days; // Segurança caso a lógica mude
         }
 
         function getBalanceStatus(cycle = appData.currentCycle) {
@@ -1061,41 +1053,31 @@
             statusEl.className = `balance-status ${status.class}`;
             statusEl.innerHTML = `<span>${status.text}</span>`;
             
-            // --- Cálculos Semanais & Diários Corrigidos ---
-            
+            // --- Variáveis Principais ---
             const weeklyBudgetTotal = parseFloat(appData.currentCycle.weeklyBudget) || 0;
-            const totalWeeklySpent = getWeeklySpending(); // Inclui hoje
-            const spentToday = getTodaysWeeklySpending();
+            const totalWeeklySpent = getWeeklySpending(); // Total gasto na semana (inclui ontem e hoje)
+            const daysRemaining = getDaysRemainingInWeek(); // Quinta = 3, Sábado = 1
             
-            // Saldo Restante da Semana
+            // --- Lógica Card Semanal (Pode Gastar na Semana) ---
+            // Saldo simples: Orçamento - Gastos
             const currentWeeklyBalance = weeklyBudgetTotal - totalWeeklySpent;
-            
-            // Dias restantes na semana (Hoje até Sábado)
-            // Domingo = 0 (7 dias restantes), Sábado = 6 (1 dia restante)
-            const today = new Date();
-            const dayOfWeek = today.getDay();
-            const daysRemaining = 7 - dayOfWeek; 
+            // Média real para o card semanal (Quanto tenho / dias que faltam)
+            const averageForRemainingDays = daysRemaining > 0 ? currentWeeklyBalance / daysRemaining : 0;
 
-            // Lógica Exata Solicitada:
-            // 1. Descobrir quanto tínhamos no início do dia
-            // Saldo Atual + O que gastei hoje = O que eu tinha quando acordei
-            const balanceStartOfDay = currentWeeklyBalance + spentToday;
+            // --- Lógica Card Diário (Pode Gastar Hoje - CORREÇÃO AGRESSIVA) ---
+            // 1. Base Diária = Orçamento TOTAL / Dias Restantes
+            // Ex: 210 / 3 = 70.00
+            const dailyBase = daysRemaining > 0 ? weeklyBudgetTotal / daysRemaining : 0;
 
-            // 2. Definir a Meta Diária Fixa (SaldoInicioDia / DiasRestantes)
-            // Ex: Se sobraram 210 no inicio da quinta (3 dias): 210 / 3 = 70.
-            const dailyCap = daysRemaining > 0 ? balanceStartOfDay / daysRemaining : 0;
+            // 2. Pode Gastar Hoje = Base Diária - TOTAL Gasto na Semana
+            // Ex: 70 (Base) - 70 (Gasto ontem/hoje) = 0.
+            const allowedToday = dailyBase - totalWeeklySpent;
 
-            // 3. Calcular quanto sobrou HOJE dessa meta
-            // Ex: Meta 70 - Gastei 20 = Sobra 50
-            const todayRemaining = dailyCap - spentToday;
-            
-            // --- Atualização dos Cards ---
+            // --- Atualização dos Elementos ---
 
-            // Card: Pode Gastar na Semana (Saldo Restante)
+            // Card: Pode Gastar na Semana
             document.getElementById('weeklyAllowance').textContent = `R$ ${Math.max(0, currentWeeklyBalance).toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
-            // Subtítulo: Média simples do que sobrou para os dias que faltam
-            const mathAverage = daysRemaining > 0 ? currentWeeklyBalance / daysRemaining : 0;
-            document.getElementById('weeklyInfo').textContent = `Média real: R$ ${Math.max(0, mathAverage).toLocaleString('pt-BR', {maximumFractionDigits: 0})}/dia (${daysRemaining}d)`;
+            document.getElementById('weeklyInfo').textContent = `Média real: R$ ${Math.max(0, averageForRemainingDays).toLocaleString('pt-BR', {maximumFractionDigits: 0})}/dia (${daysRemaining}d)`;
             
             // Card: Gasto Total do Mês
             const monthlySpent = getMonthlySpending();
@@ -1107,17 +1089,15 @@
             document.getElementById('weeklySpent').textContent = `R$ ${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
             document.getElementById('weeklyProgress').textContent = `${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/${weeklyBudgetTotal.toLocaleString('pt-BR', {maximumFractionDigits: 0})} utilizados`;
             
-            // Card: Pode Gastar Hoje (Correção Aplicada)
-            // Se dailyCap for negativo (estourou orçamento anterior), mostra 0 ou negativo conforme preferência.
-            // Aqui mantive permitindo negativo para alertar, ou Max(0) se preferir não mostrar dívida.
-            // Para ser fiel ao "Pode Gastar", se for negativo, é melhor mostrar 0 ou o negativo.
-            // Vou deixar mostrando o valor real (pode ser negativo se gastou demais).
-            document.getElementById('dailyAllowance').textContent = `R$ ${todayRemaining.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            // Card: Pode Gastar Hoje (Atualizado)
+            document.getElementById('dailyAllowance').textContent = `R$ ${allowedToday.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             
-            if (spentToday > 0) {
-                document.getElementById('dailyInfo').textContent = `Meta: R$ ${dailyCap.toLocaleString('pt-BR', {maximumFractionDigits: 0})} - Gasto: R$ ${spentToday.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            // Texto explicativo do card diário
+            if (totalWeeklySpent > 0) {
+                // Mostra: "Base fixa (70) - Gasto Total (70)"
+                document.getElementById('dailyInfo').textContent = `Base: R$ ${dailyBase.toLocaleString('pt-BR', {maximumFractionDigits: 0})} - Gasto Total: R$ ${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
             } else {
-                document.getElementById('dailyInfo').textContent = `Sua meta para hoje`;
+                document.getElementById('dailyInfo').textContent = `Sua meta calculada para hoje`;
             }
 
             // --- Dias para Reset ---
@@ -1229,11 +1209,9 @@
                 return;
             }
 
-            // Reverse for display (newest first)
             const reversedCycles = [...appData.pastCycles].reverse();
 
             container.innerHTML = reversedCycles.map((cycle, reverseIndex) => {
-                // Calculate original index for deletion logic
                 const originalIndex = appData.pastCycles.length - 1 - reverseIndex;
                 const totalSpent = cycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
                 const start = formatDate(cycle.startDate);
