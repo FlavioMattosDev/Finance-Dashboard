@@ -989,23 +989,25 @@
 
         function getWeeklySpending(cycle = appData.currentCycle) {
             const today = new Date();
-            const dayOfWeek = today.getDay(); // 0 (Domingo) a 6 (Sábado)
+            const dayOfWeek = today.getDay(); // 0=Domingo, 1=Segunda, ..., 6=Sábado
             const startOfWeek = new Date(today);
-            
+
+            // Semana: Segunda (1) a Domingo (0)
             if (dayOfWeek === 0) { // Domingo
-                startOfWeek.setDate(today.getDate() - 6); // Volta para segunda passada
+                startOfWeek.setDate(today.getDate() - 6); // Volta para Segunda anterior
             } else {
-                startOfWeek.setDate(today.getDate() - (dayOfWeek - 1)); // Volta para segunda
+                startOfWeek.setDate(today.getDate() - (dayOfWeek - 1)); // Volta para Segunda
             }
             startOfWeek.setHours(0, 0, 0, 0);
-            
+
             const endOfWeek = new Date(startOfWeek);
             endOfWeek.setDate(startOfWeek.getDate() + 6);
             endOfWeek.setHours(23, 59, 59, 999);
-            
+
             return cycle.transactions
                 .filter(t => {
                     const tDate = new Date(t.date);
+                    tDate.setHours(0, 0, 0, 0);
                     return tDate >= startOfWeek && tDate <= endOfWeek && t.deductFrom === 'weekly';
                 })
                 .reduce((sum, t) => sum + parseFloat(t.amount), 0);
@@ -1017,7 +1019,7 @@
 
         function getDaysRemainingInWeek() {
             const today = new Date();
-            const dayOfWeek = today.getDay();
+            const dayOfWeek = today.getDay(); // 0=Domingo, 1=Segunda, ..., 6=Sábado
             return dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
         }
 
@@ -1033,57 +1035,56 @@
         }
 
         function getCycleForDate(dateStr, createIfNotExist = true) {
-            const date = new Date(dateStr + 'T00:00:00-03:00'); // CORREÇÃO: Fuso do Brasil
-            const resetDate = new Date(appData.currentCycle.resetDate + 'T00:00:00-03:00');
-            let year = date.getFullYear();
-            let month = date.getMonth();
-            
-            if (date.getDate() < resetDate.getDate()) {
-                month--;
-                if (month < 0) {
-                    month = 11;
-                    year--;
-                }
-            }
-            
-            const cycleStart = new Date(year, month, resetDate.getDate());
-            cycleStart.setHours(0, 0, 0, 0);
-            
-            const cycleStartStr = cycleStart.toISOString().split('T')[0];
-            const nextCycleStart = new Date(year, month + 1, resetDate.getDate());
-            nextCycleStart.setHours(0, 0, 0, 0);
-            
-            const currentStart = new Date(appData.currentCycle.startDate);
-            currentStart.setHours(0, 0, 0, 0);
-            
-            // Usar data simples para comparação
-            const dateSimple = date.toISOString().split('T')[0];
-            const currentStartSimple = currentStart.toISOString().split('T')[0];
-            
-            if (dateSimple >= currentStartSimple) {
+            // Converter para objeto Date (tratamento simples)
+            const date = new Date(dateStr);
+
+            // Se a data for inválida, usar data atual
+            if (isNaN(date.getTime())) {
                 return appData.currentCycle;
             }
 
+            // Verificar se está no ciclo atual
+            const cycleStart = new Date(appData.currentCycle.startDate);
+            cycleStart.setHours(0, 0, 0, 0);
+
+            const compareDate = new Date(date);
+            compareDate.setHours(0, 0, 0, 0);
+
+            // Se a data é >= início do ciclo atual, retornar ciclo atual
+            if (compareDate >= cycleStart) {
+                return appData.currentCycle;
+            }
+
+            // Para ciclos passados, buscar existente ou criar
+            const resetDay = new Date(appData.currentCycle.resetDate).getDate();
+            const year = date.getFullYear();
+            const month = date.getMonth();
+
+            const cycleStartDate = new Date(year, month, resetDay);
+            const cycleEndDate = new Date(year, month + 1, resetDay);
+
+            // Encontrar ciclo existente
             let cycle = appData.pastCycles.find(c => {
                 const cStart = new Date(c.startDate);
                 cStart.setHours(0, 0, 0, 0);
-                return cStart.getTime() === cycleStart.getTime();
+                return cStart.getTime() === cycleStartDate.getTime();
             });
-            
+
             if (!cycle && createIfNotExist) {
                 cycle = {
                     id: generateUUID(),
-                    monthlyBalance: appData.currentCycle.monthlyBalance,
-                    weeklyBudget: appData.currentCycle.weeklyBudget,
+                    monthlyBalance: appData.currentCycle.monthlyBalance || 0,
+                    weeklyBudget: appData.currentCycle.weeklyBudget || 0,
                     resetDate: appData.currentCycle.resetDate,
-                    startDate: cycleStart.toISOString(),
-                    endDate: nextCycleStart.toISOString(),
+                    startDate: cycleStartDate.toISOString(),
+                    endDate: cycleEndDate.toISOString(),
                     transactions: []
                 };
                 appData.pastCycles.push(cycle);
                 saveData();
             }
-            return cycle;
+
+            return cycle || appData.currentCycle;
         }
 
         function findCycleByTransactionId(id) {
@@ -1219,6 +1220,7 @@
             const date = new Date(dateString);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
             
@@ -1227,6 +1229,7 @@
             
             if (compareDate.getTime() === today.getTime()) return 'Hoje';
             if (compareDate.getTime() === yesterday.getTime()) return 'Ontem';
+            
             return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
         }
 
@@ -1356,7 +1359,7 @@
             const category = document.getElementById('selectedCategory').value;
             const description = document.getElementById('expenseDescription').value.trim();
             const deductFrom = document.getElementById('selectedDeductFrom').value;
-
+        
             if (!dateInput) {
                 showAlert('Selecione uma data!');
                 return;
@@ -1373,14 +1376,21 @@
                 showAlert('Selecione o tipo de abatimento!');
                 return;
             }
-
-            const date = new Date(dateInput + 'T00:00:00-03:00').toISOString();
-            const cycle = getCycleForDate(dateInput);
+        
+            // Criar data no formato YYYY-MM-DDT00:00:00 (local)
+            const date = new Date(dateInput);
+            date.setHours(0, 0, 0, 0);
 
             const expense = {
                 id: editingTransactionId || generateUUID(),
-                date, amount, category, description: description || category, deductFrom
+                date: date.toISOString(),
+                amount, 
+                category, 
+                description: description || category, 
+                deductFrom
             };
+        
+            const cycle = getCycleForDate(dateInput);
 
             if (editingTransactionId) {
                 const oldCycle = editingCycle || findCycleByTransactionId(editingTransactionId);
@@ -1391,7 +1401,7 @@
             } else {
                 cycle.transactions.push(expense);
             }
-
+        
             saveData();
             updateUI();
             closeExpenseModal();
