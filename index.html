@@ -803,22 +803,28 @@
                 <label>Categoria</label>
                 <div class="category-grid">
                     <button class="category-btn" data-category="Alimentação" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🍔</span> Alimentação
+                        <span class="category-btn-icon">🍔</span>
+                        Alimentação
                     </button>
                     <button class="category-btn" data-category="Transporte" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🚗</span> Transporte
+                        <span class="category-btn-icon">🚗</span>
+                        Transporte
                     </button>
                     <button class="category-btn" data-category="Lazer" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🎮</span> Lazer
+                        <span class="category-btn-icon">🎮</span>
+                        Lazer
                     </button>
                     <button class="category-btn" data-category="Saúde" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">💊</span> Saúde
+                        <span class="category-btn-icon">💊</span>
+                        Saúde
                     </button>
                     <button class="category-btn" data-category="Compras" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🛍️</span> Compras
+                        <span class="category-btn-icon">🛍️</span>
+                        Compras
                     </button>
                     <button class="category-btn" data-category="Outros" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">📦</span> Outros
+                        <span class="category-btn-icon">📦</span>
+                        Outros
                     </button>
                 </div>
                 <input type="hidden" id="selectedCategory">
@@ -985,13 +991,22 @@
             const today = new Date();
             const dayOfWeek = today.getDay(); // 0 (Domingo) a 6 (Sábado)
             const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - dayOfWeek);
+            
+            if (dayOfWeek === 0) { // Domingo
+                startOfWeek.setDate(today.getDate() - 6); // Volta para segunda passada
+            } else {
+                startOfWeek.setDate(today.getDate() - (dayOfWeek - 1)); // Volta para segunda
+            }
             startOfWeek.setHours(0, 0, 0, 0);
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
             
             return cycle.transactions
                 .filter(t => {
                     const tDate = new Date(t.date);
-                    return tDate >= startOfWeek && tDate <= today && t.deductFrom === 'weekly';
+                    return tDate >= startOfWeek && tDate <= endOfWeek && t.deductFrom === 'weekly';
                 })
                 .reduce((sum, t) => sum + parseFloat(t.amount), 0);
         }
@@ -1003,12 +1018,7 @@
         function getDaysRemainingInWeek() {
             const today = new Date();
             const dayOfWeek = today.getDay();
-            // Retorna: Dom=7? Não, a lógica padrão de apps semanais geralmente é reset no domingo ou segunda.
-            // Pelo seu exemplo "Quinta-feira restam 3 dias", assumimos que o ciclo termina Sábado.
-            // Quinta (4) -> 7 - 4 = 3. Sábado (6) -> 7 - 6 = 1.
-            // Domingo (0) -> 7 - 0 = 7.
-            let days = 7 - dayOfWeek;
-            return days === 0 ? 7 : days; // Segurança caso a lógica mude
+            return dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
         }
 
         function getBalanceStatus(cycle = appData.currentCycle) {
@@ -1023,10 +1033,11 @@
         }
 
         function getCycleForDate(dateStr, createIfNotExist = true) {
-            const date = new Date(dateStr);
-            const resetDate = new Date(appData.currentCycle.resetDate);
+            const date = new Date(dateStr + 'T00:00:00-03:00'); // CORREÇÃO: Fuso do Brasil
+            const resetDate = new Date(appData.currentCycle.resetDate + 'T00:00:00-03:00');
             let year = date.getFullYear();
             let month = date.getMonth();
+            
             if (date.getDate() < resetDate.getDate()) {
                 month--;
                 if (month < 0) {
@@ -1034,22 +1045,39 @@
                     year--;
                 }
             }
-            const cycleStart = new Date(year, month, resetDate.getDate()).toISOString().split('T')[0];
-            const nextCycleStart = new Date(year, month + 1, resetDate.getDate()).toISOString().split('T')[0];
-
-            if (dateStr >= appData.currentCycle.startDate.split('T')[0]) {
+            
+            const cycleStart = new Date(year, month, resetDate.getDate());
+            cycleStart.setHours(0, 0, 0, 0);
+            
+            const cycleStartStr = cycleStart.toISOString().split('T')[0];
+            const nextCycleStart = new Date(year, month + 1, resetDate.getDate());
+            nextCycleStart.setHours(0, 0, 0, 0);
+            
+            const currentStart = new Date(appData.currentCycle.startDate);
+            currentStart.setHours(0, 0, 0, 0);
+            
+            // Usar data simples para comparação
+            const dateSimple = date.toISOString().split('T')[0];
+            const currentStartSimple = currentStart.toISOString().split('T')[0];
+            
+            if (dateSimple >= currentStartSimple) {
                 return appData.currentCycle;
             }
 
-            let cycle = appData.pastCycles.find(c => c.startDate.split('T')[0] === cycleStart);
+            let cycle = appData.pastCycles.find(c => {
+                const cStart = new Date(c.startDate);
+                cStart.setHours(0, 0, 0, 0);
+                return cStart.getTime() === cycleStart.getTime();
+            });
+            
             if (!cycle && createIfNotExist) {
                 cycle = {
                     id: generateUUID(),
                     monthlyBalance: appData.currentCycle.monthlyBalance,
                     weeklyBudget: appData.currentCycle.weeklyBudget,
                     resetDate: appData.currentCycle.resetDate,
-                    startDate: cycleStart + 'T00:00:00.000Z',
-                    endDate: nextCycleStart + 'T00:00:00.000Z',
+                    startDate: cycleStart.toISOString(),
+                    endDate: nextCycleStart.toISOString(),
                     transactions: []
                 };
                 appData.pastCycles.push(cycle);
@@ -1080,52 +1108,37 @@
             
             // --- Variáveis Principais ---
             const weeklyBudgetTotal = parseFloat(appData.currentCycle.weeklyBudget) || 0;
-            const totalWeeklySpent = getWeeklySpending(); // Total gasto na semana (inclui ontem e hoje)
-            const daysRemaining = getDaysRemainingInWeek(); // Quinta = 3, Sábado = 1
+            const totalWeeklySpent = getWeeklySpending();
+            const daysRemaining = getDaysRemainingInWeek();
             
             // --- Lógica Card Semanal (Pode Gastar na Semana) ---
-            // Saldo simples: Orçamento - Gastos
             const currentWeeklyBalance = weeklyBudgetTotal - totalWeeklySpent;
-            // Média real para o card semanal (Quanto tenho / dias que faltam)
             const averageForRemainingDays = daysRemaining > 0 ? currentWeeklyBalance / daysRemaining : 0;
 
-            // --- Lógica Card Diário (Pode Gastar Hoje - CORREÇÃO AGRESSIVA) ---
-            // 1. Base Diária = Orçamento TOTAL / Dias Restantes
-            // Ex: 210 / 3 = 70.00
+            // --- Lógica Card Diário (Pode Gastar Hoje) ---
             const dailyBase = daysRemaining > 0 ? weeklyBudgetTotal / daysRemaining : 0;
-
-            // 2. Pode Gastar Hoje = Base Diária - TOTAL Gasto na Semana
-            // Ex: 70 (Base) - 70 (Gasto ontem/hoje) = 0.
             const allowedToday = dailyBase - totalWeeklySpent;
 
             // --- Atualização dos Elementos ---
-
-            // Card: Pode Gastar na Semana
             document.getElementById('weeklyAllowance').textContent = `R$ ${Math.max(0, currentWeeklyBalance).toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
             document.getElementById('weeklyInfo').textContent = `Média real: R$ ${Math.max(0, averageForRemainingDays).toLocaleString('pt-BR', {maximumFractionDigits: 0})}/dia (${daysRemaining}d)`;
             
-            // Card: Gasto Total do Mês
             const monthlySpent = getMonthlySpending();
             document.getElementById('monthlySpent').textContent = `R$ ${monthlySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
             const initialMonthly = parseFloat(appData.currentCycle.monthlyBalance) || 0;
             document.getElementById('monthlyInfo').textContent = `${monthlySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/${initialMonthly.toLocaleString('pt-BR', {maximumFractionDigits: 0})} total`;
             
-            // Card: Gasto Total da Semana
             document.getElementById('weeklySpent').textContent = `R$ ${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
             document.getElementById('weeklyProgress').textContent = `${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/${weeklyBudgetTotal.toLocaleString('pt-BR', {maximumFractionDigits: 0})} utilizados`;
             
-            // Card: Pode Gastar Hoje (Atualizado)
             document.getElementById('dailyAllowance').textContent = `R$ ${allowedToday.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             
-            // Texto explicativo do card diário
             if (totalWeeklySpent > 0) {
-                // Mostra: "Base fixa (70) - Gasto Total (70)"
                 document.getElementById('dailyInfo').textContent = `Base: R$ ${dailyBase.toLocaleString('pt-BR', {maximumFractionDigits: 0})} - Gasto Total: R$ ${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
             } else {
                 document.getElementById('dailyInfo').textContent = `Sua meta calculada para hoje`;
             }
 
-            // --- Dias para Reset ---
             const days = getDaysRemaining();
             let daysText;
             if (days > 0) {
@@ -1140,7 +1153,6 @@
             
             updateTransactionsList();
             
-            // Sync settings inputs
             document.getElementById('setMonthlyBalance').value = appData.currentCycle.monthlyBalance || '';
             document.getElementById('setWeeklyBudget').value = appData.currentCycle.weeklyBudget || '';
             document.getElementById('setResetDate').value = appData.currentCycle.resetDate || new Date().toISOString().split('T')[0];
@@ -1160,7 +1172,7 @@
                 filtered = filtered.filter(t => t.category === filterCategory);
             }
             if (filterDay) {
-                const selectedDayStart = new Date(filterDay);
+                const selectedDayStart = new Date(filterDay + 'T00:00:00-03:00');
                 const selectedDayEnd = new Date(selectedDayStart);
                 selectedDayEnd.setDate(selectedDayEnd.getDate() + 1);
                 filtered = filtered.filter(t => {
@@ -1206,11 +1218,15 @@
         function formatDate(dateString) {
             const date = new Date(dateString);
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
             
-            if (date.toDateString() === today.toDateString()) return 'Hoje';
-            if (date.toDateString() === yesterday.toDateString()) return 'Ontem';
+            const compareDate = new Date(date);
+            compareDate.setHours(0, 0, 0, 0);
+            
+            if (compareDate.getTime() === today.getTime()) return 'Hoje';
+            if (compareDate.getTime() === yesterday.getTime()) return 'Ontem';
             return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
         }
 
@@ -1312,7 +1328,6 @@
             editingCycle = null;
             document.querySelector('#expenseModal .modal-title').textContent = 'Nova Despesa';
             document.querySelector('#expenseModal .submit-btn').textContent = 'Adicionar Despesa';
-            // Clear inputs
             document.getElementById('expenseAmount').value = '';
             document.getElementById('expenseDescription').value = '';
             document.getElementById('selectedCategory').value = '';
@@ -1359,8 +1374,8 @@
                 return;
             }
 
-            const date = new Date(dateInput).toISOString();
-            const cycle = getCycleForDate(date);
+            const date = new Date(dateInput + 'T00:00:00-03:00').toISOString();
+            const cycle = getCycleForDate(dateInput);
 
             const expense = {
                 id: editingTransactionId || generateUUID(),
@@ -1588,7 +1603,7 @@
 
         window.addEventListener('load', () => {
             loadData();
-            setInterval(updateUI, 21600000); // Atualiza a cada 6 horas
+            setInterval(updateUI, 21600000);
         });
     </script>
 </body>
