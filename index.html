@@ -670,6 +670,7 @@
         }
 
         /* Personalização do ícone de Calendário */
+        
         input[type="date"] {
             position: relative;
             cursor: text;
@@ -681,9 +682,9 @@
             background-position: center;
             background-size: 20px;
             cursor: pointer;
-            width: 24px;
+            width: 24px; 
             height: 24px;
-            color: transparent;
+            color: transparent; 
             opacity: 1;
             transition: var(--transition);
         }
@@ -697,7 +698,7 @@
 <body>
     <div class="bg-gradient"></div>
     <div class="bg-grid"></div>
-
+    
     <div class="container">
         <header>
             <h1>
@@ -755,7 +756,6 @@
 
             <div class="transactions">
                 <div class="section-title">Histórico Recente <button class="action-icon-btn" onclick="openPastCyclesModal()" title="Ver Ciclos Passados" style="margin-left: auto;">📅</button></div>
-                
                 <div class="filter-group">
                     <select id="filterType" class="filter-select" onchange="updateTransactionsList()">
                         <option value="all">Todos Tipos</option>
@@ -773,105 +773,100 @@
                     </select>
                     <input type="date" id="filterDay" class="filter-date" onchange="updateTransactionsList()">
                 </div>
-
                 <div id="transactionsList">
-                    </div>
+                    <!-- Dynamic content -->
+                </div>
             </div>
         </main>
     </div>
 
+    <!-- Expense Modal -->
     <div class="modal" id="expenseModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Nova Despesa</h2>
                 <button class="close-btn" onclick="closeExpenseModal()">&times;</button>
             </div>
-            
             <div class="form-group">
                 <label>Data</label>
                 <input type="date" id="expenseDate" value="">
             </div>
-
             <div class="form-group">
                 <label>Valor (R$)</label>
                 <input type="number" id="expenseAmount" step="0.01" placeholder="0,00" autofocus>
             </div>
-
             <div class="form-group">
                 <label>Descrição (Opcional)</label>
                 <input type="text" id="expenseDescription" placeholder="Ex: Mercado, Uber...">
             </div>
-
             <div class="form-group">
                 <label>Categoria</label>
                 <div class="category-grid">
                     <button class="category-btn" data-category="Alimentação" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🍱</span>
-                        Alimentação
+                        <span class="category-btn-icon">🍔</span> Alimentação
                     </button>
                     <button class="category-btn" data-category="Transporte" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🚗</span>
-                        Transporte
+                        <span class="category-btn-icon">🚗</span> Transporte
                     </button>
                     <button class="category-btn" data-category="Lazer" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🎬</span>
-                        Lazer
+                        <span class="category-btn-icon">🎮</span> Lazer
                     </button>
                     <button class="category-btn" data-category="Saúde" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">💊</span>
-                        Saúde
+                        <span class="category-btn-icon">💊</span> Saúde
                     </button>
                     <button class="category-btn" data-category="Compras" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">🛍️</span>
-                        Compras
+                        <span class="category-btn-icon">🛍️</span> Compras
                     </button>
                     <button class="category-btn" data-category="Outros" onclick="selectCategory(this)">
-                        <span class="category-btn-icon">⚙️</span>
-                        Outros
+                        <span class="category-btn-icon">📦</span> Outros
                     </button>
                 </div>
-                <input type="hidden" id="selectedCategory" value="">
+                <input type="hidden" id="selectedCategory">
             </div>
-
             <div class="form-group">
-                <label>Deduzir de</label>
+                <label>Abater de qual saldo?</label>
                 <div class="deduct-grid">
-                    <button class="category-btn deduct-btn" data-type="weekly" onclick="selectDeduct(this)">
-                        <span>Semanal</span>
+                    <button class="category-btn deduct-btn" data-deduct="weekly" onclick="selectDeductFrom(this)">
+                        📅 Semanal
                     </button>
-                    <button class="category-btn deduct-btn" data-type="monthly" onclick="selectDeduct(this)">
-                        <span>Mensal (Fixa)</span>
+                    <button class="category-btn deduct-btn" data-deduct="monthly" onclick="selectDeductFrom(this)">
+                        📆 Mensal
                     </button>
                 </div>
-                <input type="hidden" id="selectedDeductFrom" value="weekly">
+                <input type="hidden" id="selectedDeductFrom">
             </div>
-
-            <button class="submit-btn" onclick="addExpenseClick()">Registrar Despesa</button>
+            <button class="submit-btn" onclick="addExpenseClick()">Adicionar Despesa</button>
         </div>
     </div>
 
+    <!-- Settings Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Configurar Ciclo</h2>
+                <h2 class="modal-title">Configurações</h2>
                 <button class="close-btn" onclick="closeSettings()">&times;</button>
             </div>
-            
             <div class="form-group">
-                <label>Saldo para o Mês (R$)</label>
-                <input type="number" id="monthlyLimit" placeholder="Ex: 2000,00">
+                <label>Saldo Mensal Total</label>
+                <input type="number" id="setMonthlyBalance" step="0.01" placeholder="0,00">
             </div>
-
             <div class="form-group">
-                <label>Data de Reset (Próximo Mês)</label>
-                <input type="date" id="resetDate">
+                <label>Orçamento Semanal</label>
+                <input type="number" id="setWeeklyBudget" step="0.01" placeholder="Ex: 210,00">
             </div>
-
-            <button class="submit-btn" onclick="startNewCycle()">Salvar e Reiniciar</button>
-            <button class="reset-btn" onclick="confirmReset()">Apagar Todos os Dados</button>
+            <div class="form-group">
+                <label>Data de Reset</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="date" id="setResetDate" value="">
+                </div>
+            </div>
+            <button class="submit-btn" onclick="saveSettings()">Salvar Alterações</button>
+            <button class="reset-btn" onclick="showResetConfirm()">🔄 Iniciar Novo Ciclo</button>
+            <button class="reset-btn" onclick="showEndCycleConfirm()">🛑 Encerrar Ciclo Atual</button>
         </div>
     </div>
 
+    <!-- Past Cycles Modal -->
     <div class="modal" id="pastCyclesModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -879,313 +874,681 @@
                 <button class="close-btn" onclick="closePastCyclesModal()">&times;</button>
             </div>
             <div id="pastCyclesList">
-                </div>
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Cycle Details Modal -->
+    <div class="modal" id="cycleDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Detalhes do Ciclo</h2>
+                <button class="close-btn" onclick="closeCycleDetailsModal()">&times;</button>
+            </div>
+            <div id="cycleDetailsContent">
+                <!-- Dynamic content -->
+            </div>
         </div>
     </div>
 
     <script>
-        // Data Storage
+        // SAFE STORAGE WRAPPER
         const storage = {
-            save: (key, data) => window.localStorage.setItem(key, JSON.stringify(data)),
-            load: (key) => JSON.parse(window.localStorage.getItem(key))
+            isAvailable: () => {
+                try {
+                    const test = '__storage_test__';
+                    window.localStorage.setItem(test, test);
+                    window.localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            },
+            save: (key, data) => {
+                if (storage.isAvailable()) {
+                    try {
+                        window.localStorage.setItem(key, JSON.stringify(data));
+                    } catch (e) {
+                        console.error('Erro ao salvar no localStorage:', e);
+                        if (e.name === 'QuotaExceededError') {
+                            showAlert('Armazenamento local cheio! Limpe dados ou exclua transações antigas.');
+                        } else {
+                            showAlert('Erro ao salvar dados. Tente novamente.');
+                        }
+                    }
+                }
+            },
+            load: (key) => {
+                if (storage.isAvailable()) {
+                    try {
+                        const saved = window.localStorage.getItem(key);
+                        return saved ? JSON.parse(saved) : null;
+                    } catch (e) {
+                        console.error('Erro ao carregar do localStorage:', e);
+                        showAlert('Erro ao carregar dados salvos. Iniciando novo ciclo.');
+                        return null;
+                    }
+                }
+                return null;
+            }
+        };
+
+        const categoryIcons = {
+            'Alimentação': '🍔', 'Transporte': '🚗', 'Lazer': '🎮', 
+            'Saúde': '💊', 'Compras': '🛍️', 'Outros': '📦'
         };
 
         let appData = {
+            pastCycles: [],
             currentCycle: {
-                limit: 0,
-                resetDate: '',
+                id: generateUUID(),
+                monthlyBalance: 0,
+                weeklyBudget: 0,
+                resetDate: new Date().toISOString().split('T')[0],
+                startDate: new Date().toISOString(),
                 transactions: []
-            },
-            pastCycles: []
+            }
         };
 
-        // UI Handlers
-        function openExpenseModal() {
-            document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('expenseModal').classList.add('active');
-            document.getElementById('expenseAmount').focus();
+        let editingTransactionId = null;
+        let editingCycle = null;
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
         }
 
-        function closeExpenseModal() {
-            document.getElementById('expenseModal').classList.remove('active');
-            clearForm();
+        // --- Funções de Cálculo ---
+        
+        function calculateMonthlyBalance(cycle = appData.currentCycle) {
+            const initial = parseFloat(cycle.monthlyBalance) || 0;
+            const spent = cycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            return initial - spent;
         }
 
-        function openSettings() {
-            document.getElementById('monthlyLimit').value = appData.currentCycle.limit || '';
-            document.getElementById('resetDate').value = appData.currentCycle.resetDate || '';
-            document.getElementById('settingsModal').classList.add('active');
+        function getDaysRemaining() {
+            const today = new Date();
+            const resetDate = new Date(appData.currentCycle.resetDate);
+            let nextReset = new Date(today.getFullYear(), today.getMonth(), resetDate.getDate());
+            if (nextReset <= today) {
+                nextReset.setMonth(nextReset.getMonth() + 1);
+            }
+            const diff = nextReset - today;
+            return Math.ceil(diff / (1000 * 60 * 60 * 24));
         }
 
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.remove('active');
+        function getWeeklySpending(cycle = appData.currentCycle) {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 (Domingo) a 6 (Sábado)
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - dayOfWeek);
+            startOfWeek.setHours(0, 0, 0, 0);
+            
+            return cycle.transactions
+                .filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate >= startOfWeek && tDate <= today && t.deductFrom === 'weekly';
+                })
+                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        }
+
+        function getMonthlySpending(cycle = appData.currentCycle) {
+            return cycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        }
+
+        function getDaysRemainingInWeek() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            // Retorna: Dom=7? Não, a lógica padrão de apps semanais geralmente é reset no domingo ou segunda.
+            // Pelo seu exemplo "Quinta-feira restam 3 dias", assumimos que o ciclo termina Sábado.
+            // Quinta (4) -> 7 - 4 = 3. Sábado (6) -> 7 - 6 = 1.
+            // Domingo (0) -> 7 - 0 = 7.
+            let days = 7 - dayOfWeek;
+            return days === 0 ? 7 : days; // Segurança caso a lógica mude
+        }
+
+        function getBalanceStatus(cycle = appData.currentCycle) {
+            const balance = calculateMonthlyBalance(cycle);
+            const initial = parseFloat(cycle.monthlyBalance) || 0;
+            if (initial === 0) return { class: 'status-warning', text: 'Configure seu saldo' };
+            
+            const percentage = (balance / initial) * 100;
+            if (percentage >= 50) return { class: 'status-good', text: 'Saldo Saudável' };
+            if (percentage >= 20) return { class: 'status-warning', text: 'Atenção ao Saldo' };
+            return { class: 'status-danger', text: 'Saldo Crítico' };
+        }
+
+        function getCycleForDate(dateStr, createIfNotExist = true) {
+            const date = new Date(dateStr);
+            const resetDate = new Date(appData.currentCycle.resetDate);
+            let year = date.getFullYear();
+            let month = date.getMonth();
+            if (date.getDate() < resetDate.getDate()) {
+                month--;
+                if (month < 0) {
+                    month = 11;
+                    year--;
+                }
+            }
+            const cycleStart = new Date(year, month, resetDate.getDate()).toISOString().split('T')[0];
+            const nextCycleStart = new Date(year, month + 1, resetDate.getDate()).toISOString().split('T')[0];
+
+            if (dateStr >= appData.currentCycle.startDate.split('T')[0]) {
+                return appData.currentCycle;
+            }
+
+            let cycle = appData.pastCycles.find(c => c.startDate.split('T')[0] === cycleStart);
+            if (!cycle && createIfNotExist) {
+                cycle = {
+                    id: generateUUID(),
+                    monthlyBalance: appData.currentCycle.monthlyBalance,
+                    weeklyBudget: appData.currentCycle.weeklyBudget,
+                    resetDate: appData.currentCycle.resetDate,
+                    startDate: cycleStart + 'T00:00:00.000Z',
+                    endDate: nextCycleStart + 'T00:00:00.000Z',
+                    transactions: []
+                };
+                appData.pastCycles.push(cycle);
+                saveData();
+            }
+            return cycle;
+        }
+
+        function findCycleByTransactionId(id) {
+            if (appData.currentCycle.transactions.find(t => t.id === id)) return appData.currentCycle;
+            for (let pastCycle of appData.pastCycles) {
+                if (pastCycle.transactions.find(t => t.id === id)) return pastCycle;
+            }
+            return null;
+        }
+
+        // --- UI & UX Logic ---
+
+        function updateUI() {
+            // --- Saldo Mensal ---
+            const monthlyBalance = calculateMonthlyBalance();
+            document.getElementById('currentBalance').textContent = `R$ ${monthlyBalance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            
+            const status = getBalanceStatus();
+            const statusEl = document.getElementById('balanceStatus');
+            statusEl.className = `balance-status ${status.class}`;
+            statusEl.innerHTML = `<span>${status.text}</span>`;
+            
+            // --- Variáveis Principais ---
+            const weeklyBudgetTotal = parseFloat(appData.currentCycle.weeklyBudget) || 0;
+            const totalWeeklySpent = getWeeklySpending(); // Total gasto na semana (inclui ontem e hoje)
+            const daysRemaining = getDaysRemainingInWeek(); // Quinta = 3, Sábado = 1
+            
+            // --- Lógica Card Semanal (Pode Gastar na Semana) ---
+            // Saldo simples: Orçamento - Gastos
+            const currentWeeklyBalance = weeklyBudgetTotal - totalWeeklySpent;
+            // Média real para o card semanal (Quanto tenho / dias que faltam)
+            const averageForRemainingDays = daysRemaining > 0 ? currentWeeklyBalance / daysRemaining : 0;
+
+            // --- Lógica Card Diário (Pode Gastar Hoje - CORREÇÃO AGRESSIVA) ---
+            // 1. Base Diária = Orçamento TOTAL / Dias Restantes
+            // Ex: 210 / 3 = 70.00
+            const dailyBase = daysRemaining > 0 ? weeklyBudgetTotal / daysRemaining : 0;
+
+            // 2. Pode Gastar Hoje = Base Diária - TOTAL Gasto na Semana
+            // Ex: 70 (Base) - 70 (Gasto ontem/hoje) = 0.
+            const allowedToday = dailyBase - totalWeeklySpent;
+
+            // --- Atualização dos Elementos ---
+
+            // Card: Pode Gastar na Semana
+            document.getElementById('weeklyAllowance').textContent = `R$ ${Math.max(0, currentWeeklyBalance).toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            document.getElementById('weeklyInfo').textContent = `Média real: R$ ${Math.max(0, averageForRemainingDays).toLocaleString('pt-BR', {maximumFractionDigits: 0})}/dia (${daysRemaining}d)`;
+            
+            // Card: Gasto Total do Mês
+            const monthlySpent = getMonthlySpending();
+            document.getElementById('monthlySpent').textContent = `R$ ${monthlySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            const initialMonthly = parseFloat(appData.currentCycle.monthlyBalance) || 0;
+            document.getElementById('monthlyInfo').textContent = `${monthlySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/${initialMonthly.toLocaleString('pt-BR', {maximumFractionDigits: 0})} total`;
+            
+            // Card: Gasto Total da Semana
+            document.getElementById('weeklySpent').textContent = `R$ ${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            document.getElementById('weeklyProgress').textContent = `${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/${weeklyBudgetTotal.toLocaleString('pt-BR', {maximumFractionDigits: 0})} utilizados`;
+            
+            // Card: Pode Gastar Hoje (Atualizado)
+            document.getElementById('dailyAllowance').textContent = `R$ ${allowedToday.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            // Texto explicativo do card diário
+            if (totalWeeklySpent > 0) {
+                // Mostra: "Base fixa (70) - Gasto Total (70)"
+                document.getElementById('dailyInfo').textContent = `Base: R$ ${dailyBase.toLocaleString('pt-BR', {maximumFractionDigits: 0})} - Gasto Total: R$ ${totalWeeklySpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            } else {
+                document.getElementById('dailyInfo').textContent = `Sua meta calculada para hoje`;
+            }
+
+            // --- Dias para Reset ---
+            const days = getDaysRemaining();
+            let daysText;
+            if (days > 0) {
+                daysText = `${days} ${days === 1 ? 'dia' : 'dias'} até o reset`;
+            } else if (days < 0) {
+                const abs = Math.abs(days);
+                daysText = `Dias Ultrapassados: ${abs} ${abs === 1 ? 'dia' : 'dias'} a mais que a data estipulada.`;
+            } else {
+                daysText = 'Hoje é o dia do reset';
+            }
+            document.getElementById('daysNote').textContent = daysText;
+            
+            updateTransactionsList();
+            
+            // Sync settings inputs
+            document.getElementById('setMonthlyBalance').value = appData.currentCycle.monthlyBalance || '';
+            document.getElementById('setWeeklyBudget').value = appData.currentCycle.weeklyBudget || '';
+            document.getElementById('setResetDate').value = appData.currentCycle.resetDate || new Date().toISOString().split('T')[0];
+        }
+
+        function updateTransactionsList() {
+            const container = document.getElementById('transactionsList');
+            const filterType = document.getElementById('filterType').value;
+            const filterCategory = document.getElementById('filterCategory').value;
+            const filterDay = document.getElementById('filterDay').value;
+            let filtered = [...appData.currentCycle.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (filterType !== 'all') {
+                filtered = filtered.filter(t => t.deductFrom === filterType);
+            }
+            if (filterCategory !== 'all') {
+                filtered = filtered.filter(t => t.category === filterCategory);
+            }
+            if (filterDay) {
+                const selectedDayStart = new Date(filterDay);
+                const selectedDayEnd = new Date(selectedDayStart);
+                selectedDayEnd.setDate(selectedDayEnd.getDate() + 1);
+                filtered = filtered.filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate >= selectedDayStart && tDate < selectedDayEnd;
+                });
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💸</div>
+                        <p>Nenhuma transação encontrada.<br>Adicione sua primeira despesa acima.</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = filtered.map(t => {
+                const isWeekly = t.deductFrom === 'weekly';
+                const badgeClass = isWeekly ? 'badge-weekly' : 'badge-monthly';
+                const badgeText = isWeekly ? 'Semanal' : 'Mensal';
+                
+                return `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="category-icon">${categoryIcons[t.category] || '📦'}</div>
+                        <div class="transaction-details">
+                            <h3>${t.description || t.category} <span class="type-badge ${badgeClass}">${badgeText}</span></h3>
+                            <div class="transaction-date">${formatDate(t.date)} • ${t.category}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="transaction-amount">-R$ ${parseFloat(t.amount).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        <div class="transaction-actions">
+                            <button class="action-icon-btn" onclick="editTransaction('${t.id}')" title="Editar">✏️</button>
+                            <button class="action-icon-btn" onclick="deleteTransaction('${t.id}')" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) return 'Hoje';
+            if (date.toDateString() === yesterday.toDateString()) return 'Ontem';
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
         }
 
         function openPastCyclesModal() {
-            const list = document.getElementById('pastCyclesList');
-            if (appData.pastCycles.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📁</div>
-                        <p>Nenhum ciclo finalizado ainda.</p>
-                    </div>`;
-            } else {
-                list.innerHTML = appData.pastCycles.map(cycle => `
-                    <div class="transaction-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                            <span style="font-weight: 700;">Reset em: ${formatDate(cycle.resetDate)}</span>
-                            <span class="transaction-amount" style="color: var(--accent-green)">R$ ${cycle.limit.toLocaleString('pt-BR')}</span>
-                        </div>
-                        <div style="font-size: 12px; color: var(--text-secondary);">
-                            Gasto Total: R$ ${calculateTotalSpent(cycle).toLocaleString('pt-BR')}
-                        </div>
-                    </div>
-                `).join('');
-            }
             document.getElementById('pastCyclesModal').classList.add('active');
+            updatePastCyclesList();
         }
 
         function closePastCyclesModal() {
             document.getElementById('pastCyclesModal').classList.remove('active');
         }
 
-        function selectCategory(btn) {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('selectedCategory').value = btn.dataset.category;
-        }
-
-        function selectDeduct(btn) {
-            document.querySelectorAll('.deduct-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('selectedDeductFrom').value = btn.dataset.type;
-        }
-
-        function clearForm() {
-            document.getElementById('expenseAmount').value = '';
-            document.getElementById('expenseDescription').value = '';
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('selectedCategory').value = '';
-            document.getElementById('selectedDeductFrom').value = 'weekly';
-            document.querySelectorAll('.deduct-btn')[0].classList.add('active');
-        }
-
-        // Logic Functions
-        function calculateTotalSpent(cycle = appData.currentCycle) {
-            return cycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-        }
-
-        function getWeeklySpending() {
-            const now = new Date();
-            // Início da semana (Domingo) às 00:00:00
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - now.getDay());
-            startOfWeek.setHours(0, 0, 0, 0);
-            
-            // Fim da semana (Sábado) às 23:59:59
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
-
-            return appData.currentCycle.transactions
-                .filter(t => {
-                    const tDate = new Date(t.date + 'T00:00:00'); // Garante data local
-                    return t.deductFrom === 'weekly' && tDate >= startOfWeek && tDate <= endOfWeek;
-                })
-                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-        }
-
-        function getRemainingDays() {
-            if (!appData.currentCycle.resetDate) return 0;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const reset = new Date(appData.currentCycle.resetDate + 'T00:00:00');
-            const diffTime = reset - today;
-            return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-        }
-
-        function startNewCycle() {
-            const limit = parseFloat(document.getElementById('monthlyLimit').value);
-            const resetDate = document.getElementById('resetDate').value;
-
-            if (!limit || !resetDate) {
-                alert('Por favor, preencha o saldo e a data de reset.');
-                return;
-            }
-
-            // Arquivar ciclo atual se houver dados
-            if (appData.currentCycle.limit > 0) {
-                appData.pastCycles.unshift({...appData.currentCycle});
-            }
-
-            appData.currentCycle = {
-                limit,
-                resetDate,
-                transactions: []
-            };
-
-            saveData();
-            closeSettings();
-            updateUI();
-            showConfirm('Novo ciclo iniciado com sucesso!');
-        }
-
-        function addExpenseClick() {
-            const amount = parseFloat(document.getElementById('expenseAmount').value);
-            const description = document.getElementById('expenseDescription').value;
-            const category = document.getElementById('selectedCategory').value;
-            const deductFrom = document.getElementById('selectedDeductFrom').value;
-            const dateInput = document.getElementById('expenseDate').value;
-            
-            // Se o usuário não selecionar data, usa hoje
-            const date = dateInput || new Date().toISOString().split('T')[0];
-
-            if (!amount || !category) {
-                alert('Preencha o valor e a categoria.');
-                return;
-            }
-
-            const transaction = {
-                id: Date.now(),
-                amount,
-                description: description || category,
-                category,
-                deductFrom,
-                date: date
-            };
-
-            appData.currentCycle.transactions.unshift(transaction);
-            saveData();
-            closeExpenseModal();
-            updateUI();
-        }
-
-        function deleteTransaction(id) {
-            appData.currentCycle.transactions = appData.currentCycle.transactions.filter(t => t.id !== id);
-            saveData();
-            updateUI();
-        }
-
-        function updateUI() {
-            const cycle = appData.currentCycle;
-            const totalSpent = calculateTotalSpent();
-            const currentBalance = cycle.limit - totalSpent;
-            const daysRemaining = getRemainingDays();
-            
-            // Weekly logic
-            const weeklySpending = getWeeklySpending();
-            const weeksRemaining = Math.max(1, Math.ceil(daysRemaining / 7));
-            
-            // Para calcular a permissão semanal: pegamos o saldo disponível após despesas mensais
-            const monthlyFixed = cycle.transactions
-                .filter(t => t.deductFrom === 'monthly')
-                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-            
-            const remainingForWeekly = cycle.limit - monthlyFixed;
-            const weeklyAllowance = Math.max(0, remainingForWeekly / weeksRemaining);
-            
-            // Daily logic
-            const daysInThisWeek = Math.min(daysRemaining, 7);
-            const dailyAllowance = Math.max(0, (weeklyAllowance - weeklySpending) / Math.max(1, daysRemaining % 7 || 7));
-
-            // Update Elements
-            document.getElementById('currentBalance').innerText = `R$ ${currentBalance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('monthlySpent').innerText = `R$ ${totalSpent.toLocaleString('pt-BR')}`;
-            document.getElementById('weeklySpent').innerText = `R$ ${weeklySpending.toLocaleString('pt-BR')}`;
-            document.getElementById('weeklyAllowance').innerText = `R$ ${weeklyAllowance.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
-            document.getElementById('dailyAllowance').innerText = `R$ ${dailyAllowance.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
-            
-            document.getElementById('daysNote').innerText = `${daysRemaining} dias para o reset (${formatDate(cycle.resetDate)})`;
-            document.getElementById('weeklyInfo').innerText = `Média: R$ ${(weeklyAllowance / 7).toFixed(0)}/dia`;
-            
-            // Status logic
-            const statusElement = document.getElementById('balanceStatus');
-            const percentUsed = (totalSpent / cycle.limit) * 100;
-            
-            if (percentUsed > 90) {
-                statusElement.className = 'balance-status status-danger';
-                statusElement.innerHTML = '<span>Crítico</span>';
-            } else if (percentUsed > 60) {
-                statusElement.className = 'balance-status status-warning';
-                statusElement.innerHTML = '<span>Atenção</span>';
-            } else {
-                statusElement.className = 'balance-status status-good';
-                statusElement.innerHTML = '<span>Saudável</span>';
-            }
-
-            updateTransactionsList();
-        }
-
-        function updateTransactionsList() {
-            const list = document.getElementById('transactionsList');
-            const typeFilter = document.getElementById('filterType').value;
-            const categoryFilter = document.getElementById('filterCategory').value;
-            const dayFilter = document.getElementById('filterDay').value;
-
-            let filtered = appData.currentCycle.transactions;
-
-            if (typeFilter !== 'all') filtered = filtered.filter(t => t.deductFrom === typeFilter);
-            if (categoryFilter !== 'all') filtered = filtered.filter(t => t.category === categoryFilter);
-            if (dayFilter) filtered = filtered.filter(t => t.date === dayFilter);
-
-            if (filtered.length === 0) {
-                list.innerHTML = `
+        function updatePastCyclesList() {
+            const container = document.getElementById('pastCyclesList');
+            if (!appData.pastCycles || appData.pastCycles.length === 0) {
+                container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">💸</div>
-                        <p>Nenhuma despesa encontrada.</p>
+                        <div class="empty-state-icon">📅</div>
+                        <p>Nenhum ciclo passado encontrado.</p>
                     </div>`;
                 return;
             }
 
-            list.innerHTML = filtered.map(t => `
-                <div class="transaction-item">
+            const reversedCycles = [...appData.pastCycles].reverse();
+
+            container.innerHTML = reversedCycles.map((cycle, reverseIndex) => {
+                const originalIndex = appData.pastCycles.length - 1 - reverseIndex;
+                const totalSpent = cycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                const start = formatDate(cycle.startDate);
+                const end = formatDate(cycle.endDate || new Date().toISOString());
+                return `
+                <div class="transaction-item" onclick="showCycleDetails(${originalIndex})" style="cursor: pointer;">
                     <div class="transaction-info">
-                        <div class="category-icon">${getIcon(t.category)}</div>
+                        <div class="category-icon">📅</div>
                         <div class="transaction-details">
-                            <h3>${t.description} <span class="type-badge ${t.deductFrom === 'weekly' ? 'badge-weekly' : 'badge-monthly'}">${t.deductFrom}</span></h3>
-                            <div class="transaction-date">${formatDate(t.date)}</div>
-                            <div class="transaction-actions">
-                                <button class="action-icon-btn" onclick="deleteTransaction(${t.id})">🗑️</button>
-                            </div>
+                            <h3>Ciclo Encerrado</h3>
+                            <div class="transaction-date">${start} a ${end} • Gastos: R$ ${totalSpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}</div>
                         </div>
                     </div>
-                    <div class="transaction-amount">- R$ ${parseFloat(t.amount).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="transaction-actions">
+                        <button class="action-icon-btn" onclick="deletePastCycle(event, ${originalIndex})" title="Excluir Ciclo">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function showCycleDetails(index) {
+            const cycle = appData.pastCycles[index];
+            const container = document.getElementById('cycleDetailsContent');
+            const sorted = [...cycle.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            container.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Gasto Total</div>
+                        <div class="stat-value">R$ ${cycle.transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString('pt-BR', {maximumFractionDigits: 0})}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Transações</div>
+                        <div class="stat-value">${cycle.transactions.length}</div>
+                    </div>
                 </div>
-            `).join('');
+                <div class="section-title">Transações</div>
+                ${sorted.map(t => {
+                    const isWeekly = t.deductFrom === 'weekly';
+                    const badgeClass = isWeekly ? 'badge-weekly' : 'badge-monthly';
+                    const badgeText = isWeekly ? 'Semanal' : 'Mensal';
+                    return `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <div class="category-icon">${categoryIcons[t.category] || '📦'}</div>
+                            <div class="transaction-details">
+                                <h3>${t.description || t.category} <span class="type-badge ${badgeClass}">${badgeText}</span></h3>
+                                <div class="transaction-date">${formatDate(t.date)} • ${t.category}</div>
+                            </div>
+                        </div>
+                        <div class="transaction-amount">-R$ ${parseFloat(t.amount).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    </div>`;
+                }).join('') || '<p>Nenhuma transação neste ciclo.</p>'}`;
+            document.getElementById('cycleDetailsModal').classList.add('active');
         }
 
-        function getIcon(cat) {
-            const icons = { 'Alimentação': '🍱', 'Transporte': '🚗', 'Lazer': '🎬', 'Saúde': '💊', 'Compras': '🛍️', 'Outros': '⚙️' };
-            return icons[cat] || '💰';
+        function closeCycleDetailsModal() {
+            document.getElementById('cycleDetailsModal').classList.remove('active');
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '--/--';
-            const [year, month, day] = dateStr.split('-');
-            return `${day}/${month}`;
+        // --- Modal & Action Handlers ---
+
+        function openExpenseModal() {
+            document.getElementById('expenseModal').classList.add('active');
+            const dateInput = document.getElementById('expenseDate');
+            dateInput.value = new Date().toISOString().split('T')[0];
+            setTimeout(() => document.getElementById('expenseAmount').focus(), 100);
         }
 
-        function confirmReset() {
+        function closeExpenseModal() {
+            document.getElementById('expenseModal').classList.remove('active');
+            editingTransactionId = null;
+            editingCycle = null;
+            document.querySelector('#expenseModal .modal-title').textContent = 'Nova Despesa';
+            document.querySelector('#expenseModal .submit-btn').textContent = 'Adicionar Despesa';
+            // Clear inputs
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseDescription').value = '';
+            document.getElementById('selectedCategory').value = '';
+            document.getElementById('selectedDeductFrom').value = '';
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function openSettings() { document.getElementById('settingsModal').classList.add('active'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
+
+        function selectCategory(btn) {
+            document.querySelectorAll('.category-grid .category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('selectedCategory').value = btn.dataset.category;
+        }
+
+        function selectDeductFrom(btn) {
+            document.querySelectorAll('.deduct-grid .category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('selectedDeductFrom').value = btn.dataset.deduct;
+        }
+
+        function addExpenseClick() {
+            const dateInput = document.getElementById('expenseDate').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const category = document.getElementById('selectedCategory').value;
+            const description = document.getElementById('expenseDescription').value.trim();
+            const deductFrom = document.getElementById('selectedDeductFrom').value;
+
+            if (!dateInput) {
+                showAlert('Selecione uma data!');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                showAlert('Insira um valor válido!');
+                return;
+            }
+            if (!category) {
+                showAlert('Selecione uma categoria!');
+                return;
+            }
+            if (!deductFrom) {
+                showAlert('Selecione o tipo de abatimento!');
+                return;
+            }
+
+            const date = new Date(dateInput).toISOString();
+            const cycle = getCycleForDate(date);
+
+            const expense = {
+                id: editingTransactionId || generateUUID(),
+                date, amount, category, description: description || category, deductFrom
+            };
+
+            if (editingTransactionId) {
+                const oldCycle = editingCycle || findCycleByTransactionId(editingTransactionId);
+                if (oldCycle) {
+                    oldCycle.transactions = oldCycle.transactions.filter(t => t.id !== editingTransactionId);
+                }
+                cycle.transactions.push(expense);
+            } else {
+                cycle.transactions.push(expense);
+            }
+
+            saveData();
+            updateUI();
+            closeExpenseModal();
+        }
+
+        function deleteTransaction(id) {
+            const cycle = findCycleByTransactionId(id);
+            if (!cycle) return showAlert('Transação não encontrada!');
+            const t = cycle.transactions.find(x => x.id === id);
             const modal = document.createElement('div');
             modal.className = 'modal active';
             modal.innerHTML = `
                 <div class="confirm-modal">
-                    <div class="confirm-icon">⚠️</div>
-                    <p>Tem certeza que deseja apagar TODOS os dados? Esta ação não pode ser desfeita.</p>
+                    <div class="confirm-icon">🗑️</div>
+                    <h3 style="margin-bottom: 8px">Excluir Despesa?</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px">R$ ${t.amount.toFixed(2)} - ${t.category}</p>
                     <div class="confirm-btns">
                         <button class="confirm-btn btn-cancel" onclick="this.closest('.modal').remove()">Cancelar</button>
-                        <button class="confirm-btn btn-danger" onclick="executeFullReset()">Sim, Apagar</button>
+                        <button class="confirm-btn btn-danger" onclick="confirmDelete('${id}', this)">Excluir</button>
                     </div>
                 </div>`;
             document.body.appendChild(modal);
         }
 
-        function executeFullReset() {
-            window.localStorage.removeItem('financialResetData');
-            location.reload();
+        function confirmDelete(id, btn) {
+            const cycle = findCycleByTransactionId(id);
+            if (cycle) {
+                cycle.transactions = cycle.transactions.filter(t => t.id !== id);
+            }
+            saveData();
+            updateUI();
+            btn.closest('.modal').remove();
         }
 
-        function showConfirm(message) {
+        function deletePastCycle(event, index) {
+            event.stopPropagation();
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-icon">🗑️</div>
+                    <h3 style="margin-bottom: 8px">Excluir Histórico?</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px">Esta ação não pode ser desfeita.</p>
+                    <div class="confirm-btns">
+                        <button class="confirm-btn btn-cancel" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="confirm-btn btn-danger" onclick="confirmDeleteCycle(${index}, this)">Excluir</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+
+        function confirmDeleteCycle(index, btn) {
+            appData.pastCycles.splice(index, 1);
+            saveData();
+            updatePastCyclesList();
+            btn.closest('.modal').remove();
+            closeCycleDetailsModal();
+        }
+
+        function editTransaction(id) {
+            const cycle = findCycleByTransactionId(id);
+            if (!cycle) return showAlert('Transação não encontrada!');
+            const t = cycle.transactions.find(x => x.id === id);
+            editingTransactionId = id;
+            editingCycle = cycle;
+            document.getElementById('expenseDate').value = new Date(t.date).toISOString().split('T')[0];
+            document.getElementById('expenseAmount').value = t.amount;
+            document.getElementById('expenseDescription').value = t.description || '';
+            document.getElementById('selectedCategory').value = t.category;
+            document.getElementById('selectedDeductFrom').value = t.deductFrom;
+            
+            document.querySelectorAll('.category-grid .category-btn').forEach(b => {
+                if(b.dataset.category === t.category) b.classList.add('active');
+            });
+            document.querySelectorAll('.deduct-grid .category-btn').forEach(b => {
+                if(b.dataset.deduct === t.deductFrom) b.classList.add('active');
+            });
+
+            document.querySelector('#expenseModal .modal-title').textContent = 'Editar Despesa';
+            document.querySelector('#expenseModal .submit-btn').textContent = 'Salvar Alterações';
+            openExpenseModal();
+        }
+
+        function saveSettings() {
+            const monthlyBalance = parseFloat(document.getElementById('setMonthlyBalance').value) || 0;
+            const weeklyBudget = parseFloat(document.getElementById('setWeeklyBudget').value) || 0;
+            const resetDate = document.getElementById('setResetDate').value;
+            
+            appData.currentCycle.monthlyBalance = monthlyBalance;
+            appData.currentCycle.weeklyBudget = weeklyBudget;
+            if (resetDate) appData.currentCycle.resetDate = resetDate;
+            
+            saveData();
+            updateUI();
+            closeSettings();
+            showAlert('Configurações salvas com sucesso!');
+        }
+
+        function showResetConfirm() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-icon">🔄</div>
+                    <h3 style="margin-bottom: 8px">Iniciar Novo Ciclo?</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px">Isso arquivará os dados atuais.</p>
+                    <div class="confirm-btns">
+                        <button class="confirm-btn btn-cancel" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="confirm-btn btn-success" onclick="confirmResetCycle(this)">Confirmar</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+
+        function showEndCycleConfirm() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="confirm-modal">
+                    <div class="confirm-icon">🛑</div>
+                    <h3 style="margin-bottom: 8px">Encerrar Ciclo Atual?</h3>
+                    <p style="color: var(--text-secondary); font-size: 14px">Isso arquivará o ciclo desde a primeira despesa até hoje.</p>
+                    <div class="confirm-btns">
+                        <button class="confirm-btn btn-cancel" onclick="this.closest('.modal').remove()">Cancelar</button>
+                        <button class="confirm-btn btn-danger" onclick="confirmEndCycle(this)">Confirmar</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+
+        function confirmResetCycle(btn) {
+            appData.pastCycles.push({
+                ...appData.currentCycle,
+                endDate: new Date().toISOString()
+            });
+            appData.currentCycle = {
+                id: generateUUID(),
+                monthlyBalance: appData.currentCycle.monthlyBalance,
+                weeklyBudget: appData.currentCycle.weeklyBudget,
+                resetDate: appData.currentCycle.resetDate,
+                startDate: new Date().toISOString(),
+                transactions: []
+            };
+            saveData();
+            updateUI();
+            btn.closest('.modal').remove();
+        }
+
+        function confirmEndCycle(btn) {
+            if (appData.currentCycle.transactions.length > 0) {
+                const firstExpenseDate = appData.currentCycle.transactions.reduce((min, t) => {
+                    const tDate = new Date(t.date);
+                    return tDate < min ? tDate : min;
+                }, new Date(appData.currentCycle.startDate));
+                appData.currentCycle.startDate = firstExpenseDate.toISOString();
+            }
+            appData.currentCycle.endDate = new Date().toISOString();
+            appData.pastCycles.push(appData.currentCycle);
+            appData.currentCycle = {
+                id: generateUUID(),
+                monthlyBalance: appData.currentCycle.monthlyBalance,
+                weeklyBudget: appData.currentCycle.weeklyBudget,
+                resetDate: appData.currentCycle.resetDate,
+                startDate: new Date().toISOString(),
+                transactions: []
+            };
+            saveData();
+            updateUI();
+            btn.closest('.modal').remove();
+        }
+
+        function showAlert(message) {
             const modal = document.createElement('div');
             modal.className = 'modal active';
             modal.innerHTML = `
